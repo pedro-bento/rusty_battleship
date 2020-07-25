@@ -15,30 +15,28 @@ use super::state;
 pub struct InitialState {
     board_lines: Vec<(Point, Point)>,
     ships: Vec<ship::Ship>,
+
+    ships_t: [ship::ShipType; 5],
+    curr_ship_index: usize,
+    curr_ship: Option<ship::Ship>,
 }
 
 impl InitialState {
     pub fn new() -> InitialState {
-        let mut carrier = ship::Ship::new(ship::ShipType::Carrier);
-        carrier.move_xy(Point::new(3, 3));
-
-        let mut battleship = ship::Ship::new(ship::ShipType::Battleship);
-        battleship.move_xy(Point::new(1, 2));
-
-        let mut destroyer = ship::Ship::new(ship::ShipType::Destroyer);
-        destroyer.move_xy(Point::new(2, 4));
-
-        let mut submarine = ship::Ship::new(ship::ShipType::Submarine);
-        submarine.move_xy(Point::new(3, 6));
-
-        let mut patroalboat = ship::Ship::new(ship::ShipType::PatrolBoat);
-        patroalboat.move_xy(Point::new(4, 8));
-
-        let ships = vec![carrier, battleship, destroyer, submarine, patroalboat];
+        let ships_t = [
+            ship::ShipType::Carrier,
+            ship::ShipType::Battleship,
+            ship::ShipType::Destroyer,
+            ship::ShipType::Submarine,
+            ship::ShipType::PatrolBoat,
+        ];
 
         InitialState {
             board_lines: InitialState::generate_board_lines(),
-            ships: ships,
+            ships: Vec::new(),
+            ships_t: ships_t,
+            curr_ship_index: 1,
+            curr_ship: Some(ship::Ship::new(ships_t[0])),
         }
     }
 
@@ -74,23 +72,87 @@ impl InitialState {
 
         line_points
     }
+
+    fn get_next_ship(&mut self) -> Option<ship::Ship> {
+        if self.curr_ship_index >= self.ships_t.len() {
+          return None;
+        }
+
+        let result = Some(ship::Ship::new(self.ships_t[self.curr_ship_index]));
+        self.curr_ship_index += 1;
+        return result;
+    }
+
+    fn is_valid_ship(&self) -> bool {
+        if self.curr_ship.is_none() {
+          return false;
+        }
+
+        // does the current ship overlap already existing ships?
+        for curr_ship_point in self.curr_ship.as_ref().unwrap().body.iter() {
+            for ship in self.ships.iter() {
+                for ship_point in ship.body.iter() {
+                    if *curr_ship_point == *ship_point {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true
+    }
 }
 
 impl state::State for InitialState {
     fn handle_events(&mut self, event_pump: &mut EventPump) -> bool {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => return true,
+                Event::Quit { .. } => return true,
+
+                Event::KeyDown { keycode, .. } => match keycode {
+                    Some(Keycode::Return) => {
+                        if self.is_valid_ship() {
+                            self.ships.push(self.curr_ship.as_ref().unwrap().clone());
+                            self.curr_ship = self.get_next_ship();
+                        }
+                    }
+
+                    Some(Keycode::W) | Some(Keycode::Up) => {
+                      if self.curr_ship.is_some() {
+                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, -1));
+                      } 
+                    }
+
+                    Some(Keycode::S) | Some(Keycode::Down) => {
+                      if self.curr_ship.is_some() {
+                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, 1));
+                      } 
+                    }
+
+                    Some(Keycode::A) | Some(Keycode::Left) => {
+                      if self.curr_ship.is_some() {
+                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(-1, 0));
+                      } 
+                    }
+
+                    Some(Keycode::D) | Some(Keycode::Right) => {
+                      if self.curr_ship.is_some() {
+                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(1, 0));
+                      } 
+                    }
+
+                    Some(Keycode::Escape) => return true,
+
+                    _ => {
+                        println!("<InitialState> unused key: {}", keycode.unwrap());
+                    }
+                },
 
                 _ => {}
             }
         }
 
-        false
+        return false;
     }
 
     fn draw(&self, canvas: &mut Canvas<Window>) {
@@ -109,9 +171,22 @@ impl state::State for InitialState {
         let x_interval: i32 = min_wh / 10;
         let y_interval: i32 = min_wh / 10;
 
-        // cache rects.
         let mut cached_rects: Vec<Rect> = Vec::new();
 
+        // cache current ship.
+        if self.curr_ship.is_some() {
+          for point in self.curr_ship.as_ref().unwrap().body.iter() {
+            let rect = Rect::new(
+                point.x * x_interval + x_offset,
+                point.y * y_interval,
+                x_interval as u32,
+                y_interval as u32,
+            );
+            cached_rects.push(rect);
+          }  
+        }
+
+        // cache board ships.
         for ship in self.ships.iter() {
             for point in ship.body.iter() {
                 let rect = Rect::new(
