@@ -4,9 +4,9 @@ use sdl2::video::Window;
 use sdl2::EventPump;
 
 mod config;
+mod initial_state;
 mod ship;
 mod state;
-mod initial_state;
 
 struct Game {
     canvas: Canvas<Window>,
