@@ -75,7 +75,7 @@ impl InitialState {
 
     fn get_next_ship(&mut self) -> Option<ship::Ship> {
         if self.curr_ship_index >= self.ships_t.len() {
-          return None;
+            return None;
         }
 
         let result = Some(ship::Ship::new(self.ships_t[self.curr_ship_index]));
@@ -85,7 +85,7 @@ impl InitialState {
 
     fn is_valid_ship(&self) -> bool {
         if self.curr_ship.is_none() {
-          return false;
+            return false;
         }
 
         // does the current ship overlap already existing ships?
@@ -99,7 +99,7 @@ impl InitialState {
             }
         }
 
-        return true
+        return true;
     }
 }
 
@@ -118,27 +118,39 @@ impl state::State for InitialState {
                     }
 
                     Some(Keycode::W) | Some(Keycode::Up) => {
-                      if self.curr_ship.is_some() {
-                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, -1));
-                      } 
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, -1));
+                        }
                     }
 
                     Some(Keycode::S) | Some(Keycode::Down) => {
-                      if self.curr_ship.is_some() {
-                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, 1));
-                      } 
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().move_xy(&Point::new(0, 1));
+                        }
                     }
 
                     Some(Keycode::A) | Some(Keycode::Left) => {
-                      if self.curr_ship.is_some() {
-                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(-1, 0));
-                      } 
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().move_xy(&Point::new(-1, 0));
+                        }
                     }
 
                     Some(Keycode::D) | Some(Keycode::Right) => {
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().move_xy(&Point::new(1, 0));
+                        }
+                    }
+
+                    Some(Keycode::Q) => {
                       if self.curr_ship.is_some() {
-                        self.curr_ship.as_mut().unwrap().move_xy(&Point::new(1, 0));
-                      } 
+                          self.curr_ship.as_mut().unwrap().rotate();
+                      }
+                    }
+
+                    Some(Keycode::E) => {
+                      if self.curr_ship.is_some() {
+                          self.curr_ship.as_mut().unwrap().rotate();
+                      }
                     }
 
                     Some(Keycode::Escape) => return true,
@@ -175,15 +187,15 @@ impl state::State for InitialState {
 
         // cache current ship.
         if self.curr_ship.is_some() {
-          for point in self.curr_ship.as_ref().unwrap().body.iter() {
-            let rect = Rect::new(
-                point.x * x_interval + x_offset,
-                point.y * y_interval,
-                x_interval as u32,
-                y_interval as u32,
-            );
-            cached_rects.push(rect);
-          }  
+            for point in self.curr_ship.as_ref().unwrap().body.iter() {
+                let rect = Rect::new(
+                    point.x * x_interval + x_offset,
+                    point.y * y_interval,
+                    x_interval as u32,
+                    y_interval as u32,
+                );
+                cached_rects.push(rect);
+            }
         }
 
         // cache board ships.

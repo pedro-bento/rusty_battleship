@@ -16,11 +16,11 @@ pub struct Ship {
 }
 
 impl Clone for Ship {
-  fn clone(&self) -> Ship {
-    Ship {
-      body: self.body.clone(),
+    fn clone(&self) -> Ship {
+        Ship {
+            body: self.body.clone(),
+        }
     }
-  }
 }
 
 impl Ship {
@@ -81,6 +81,54 @@ impl Ship {
 
         if self.is_valid_move(dxy) {
             self.body = self.body.iter().map(|p| new_point(p)).collect();
+        }
+    }
+
+    fn is_valid_rotate(&self) -> bool {
+        let mid_point = self.body.get(self.body.len() / 2).unwrap();
+
+        for p in self.body.iter() {
+            let aux_x = p.x - mid_point.x;
+            let aux_y = p.y - mid_point.y;
+
+            let aux_new_x = -aux_y;
+            let aux_new_y = -aux_x;
+
+            let new_x = aux_new_x + mid_point.x;
+            let new_y = aux_new_y + mid_point.y;
+
+            if new_x < 0
+                || new_x >= config::BOARD_LENGTH as i32
+                || new_y < 0
+                || new_y >= config::BOARD_LENGTH as i32
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // just left rotation for now.
+    // if needed implement new_point_rotR (just swap the '-' sign from x to y coord).
+    pub fn rotate(&mut self) {
+        let mid_point = self.body.get(self.body.len() / 2).unwrap();
+
+        let new_point_rotl = |p: &Point| {
+            let aux_x = p.x - mid_point.x;
+            let aux_y = p.y - mid_point.y;
+
+            let aux_new_x = -aux_y;
+            let aux_new_y = -aux_x;
+
+            let new_x = aux_new_x + mid_point.x;
+            let new_y = aux_new_y + mid_point.y;
+
+            return Point::new(new_x, new_y);
+        };
+
+        if self.is_valid_rotate() {
+          self.body = self.body.iter().map(|p| new_point_rotl(p)).collect();
         }
     }
 }
