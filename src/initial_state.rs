@@ -8,6 +8,7 @@ use sdl2::video::Window;
 use sdl2::EventPump;
 use std::vec::Vec;
 
+use super::battle_state;
 use super::config;
 use super::ship;
 use super::state;
@@ -104,16 +105,27 @@ impl InitialState {
 }
 
 impl state::State for InitialState {
-    fn handle_events(&mut self, event_pump: &mut EventPump) -> bool {
+    fn handle_events(&mut self, event_pump: &mut EventPump) -> state::NextState {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => return true,
+                Event::Quit { .. } => return state::NextState::Quit,
 
                 Event::KeyDown { keycode, .. } => match keycode {
                     Some(Keycode::Return) => {
                         if self.is_valid_ship() {
                             self.ships.push(self.curr_ship.as_ref().unwrap().clone());
                             self.curr_ship = self.get_next_ship();
+                        }
+
+                        // as placed all ships.
+                        // returns next state 'battle_state'.
+                        if self.curr_ship.is_none() {
+                            return state::NextState::Update(Box::new(
+                                battle_state::BattleState::new(
+                                    self.board_lines.clone(),
+                                    self.ships.clone(),
+                                ),
+                            ));
                         }
                     }
 
@@ -142,18 +154,18 @@ impl state::State for InitialState {
                     }
 
                     Some(Keycode::Q) => {
-                      if self.curr_ship.is_some() {
-                          self.curr_ship.as_mut().unwrap().rotate();
-                      }
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().rotate();
+                        }
                     }
 
                     Some(Keycode::E) => {
-                      if self.curr_ship.is_some() {
-                          self.curr_ship.as_mut().unwrap().rotate();
-                      }
+                        if self.curr_ship.is_some() {
+                            self.curr_ship.as_mut().unwrap().rotate();
+                        }
                     }
 
-                    Some(Keycode::Escape) => return true,
+                    Some(Keycode::Escape) => return state::NextState::Quit,
 
                     _ => {
                         println!("<InitialState> unused key: {}", keycode.unwrap());
@@ -164,18 +176,18 @@ impl state::State for InitialState {
             }
         }
 
-        return false;
+        return state::NextState::Continue;
     }
 
     fn draw(&self, canvas: &mut Canvas<Window>) {
         // draw board lines.
-        canvas.set_draw_color(Color::RGB(0, 255, 0));
+        canvas.set_draw_color(Color::RGBA(0, 255, 0, 255));
         for (p1, p2) in self.board_lines.iter() {
             canvas.draw_line(*p1, *p2).unwrap()
         }
 
         // draw ships.
-        canvas.set_draw_color(Color::RGB(0, 255, 0));
+        canvas.set_draw_color(Color::RGBA(0, 255, 0, 200));
 
         let x_offset: i32 = (config::WINDOW_WIDTH as i32 - config::WINDOW_HEIGHT as i32) / 2;
         let min_wh: i32 = std::cmp::min(config::WINDOW_WIDTH as i32, config::WINDOW_HEIGHT as i32);

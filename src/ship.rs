@@ -128,7 +128,7 @@ impl Ship {
         };
 
         if self.is_valid_rotate() {
-          self.body = self.body.iter().map(|p| new_point_rotl(p)).collect();
+            self.body = self.body.iter().map(|p| new_point_rotl(p)).collect();
         }
     }
 }
