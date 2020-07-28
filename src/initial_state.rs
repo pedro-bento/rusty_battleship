@@ -6,7 +6,10 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::EventPump;
+
 use std::vec::Vec;
+
+use async_trait::async_trait;
 
 use super::battle_state;
 use super::config;
@@ -104,11 +107,19 @@ impl InitialState {
     }
 }
 
+#[async_trait(?Send)]
 impl state::State for InitialState {
-    fn handle_events(&mut self, event_pump: &mut EventPump) -> state::NextState {
+    async fn handle_events(
+        &mut self,
+        event_pump: &mut EventPump,
+        next_state: &mut Option<state::NextState>,
+    ) {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => return state::NextState::Quit,
+                Event::Quit { .. } => {
+                    next_state.replace(state::NextState::Quit);
+                    return;
+                }
 
                 Event::KeyDown { keycode, .. } => match keycode {
                     Some(Keycode::Return) => {
@@ -120,12 +131,15 @@ impl state::State for InitialState {
                         // as placed all ships.
                         // returns next state 'battle_state'.
                         if self.curr_ship.is_none() {
-                            return state::NextState::Update(Box::new(
+                            next_state.replace(state::NextState::Update(Box::new(
                                 battle_state::BattleState::new(
                                     self.board_lines.clone(),
                                     self.ships.clone(),
-                                ),
-                            ));
+                                )
+                                .await
+                                .unwrap(),
+                            )));
+                            return;
                         }
                     }
 
@@ -165,7 +179,10 @@ impl state::State for InitialState {
                         }
                     }
 
-                    Some(Keycode::Escape) => return state::NextState::Quit,
+                    Some(Keycode::Escape) => {
+                        next_state.replace(state::NextState::Quit);
+                        return;
+                    }
 
                     _ => {
                         println!("<InitialState> unused key: {}", keycode.unwrap());
@@ -176,7 +193,7 @@ impl state::State for InitialState {
             }
         }
 
-        return state::NextState::Continue;
+        next_state.replace(state::NextState::Continue);
     }
 
     fn draw(&self, canvas: &mut Canvas<Window>) {
