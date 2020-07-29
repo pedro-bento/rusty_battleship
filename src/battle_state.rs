@@ -57,6 +57,11 @@ impl BattleState {
             }
         }
 
+        let mut buff: String = String::new();
+        println!("insert addr to connect: ");
+        let _ = std::io::stdin().read_line(&mut buff);
+        buff = buff.trim().to_string();
+
         Ok(BattleState {
             board_lines: board_lines,
             my_ship_points: Arc::new(Mutex::new(my_ship_points)),
@@ -73,7 +78,7 @@ impl BattleState {
 
             chat: Arc::new(Mutex::new(
                 chat::Chat::new(
-                    "127.0.0.1:6379".to_string(),
+                    buff,
                     receive_channel_key,
                     send_channel_key,
                 )

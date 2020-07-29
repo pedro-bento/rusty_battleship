@@ -487,6 +487,7 @@ dependencies = [
  "libc",
  "mini-redis",
  "sdl2",
+ "socket2",
  "tokio",
 ]
 

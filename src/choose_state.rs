@@ -76,11 +76,18 @@ impl ChooseState {
     }
 
     async fn start_server(&mut self) -> (SocketAddr, JoinHandle<mini_redis::Result<()>>) {
-        let listener = TcpListener::bind("127.0.0.1:6379").await.unwrap();
+        let mut buff: String = String::new();
+        println!("insert your ip: ");
+        let _ = std::io::stdin().read_line(&mut buff);
+        buff = buff.trim().to_string();
+
+        let listener = TcpListener::bind(format!("{}:0", buff)).await.unwrap();
         let addr = listener.local_addr().unwrap();
 
         let handle =
             tokio::spawn(async move { server::run(listener, tokio::signal::ctrl_c()).await });
+
+        println!("addr is: {:?}", addr);
 
         (addr, handle)
     }
