@@ -12,7 +12,6 @@ tokio = "0.2.22"
 mini-redis = "0.2.0"
 bytes = "0.5.6"
 async-trait = "0.1.36"
-socket2 = "0.3.12"
 
 [dependencies.sdl2]
 version = "0.34"
