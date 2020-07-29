@@ -10,11 +10,14 @@ use sdl2::EventPump;
 use std::vec::Vec;
 
 use async_trait::async_trait;
+use tokio::task::JoinHandle;
 
 use super::battle_state;
 use super::config;
 use super::ship;
 use super::state;
+
+type ServerHandle = JoinHandle<mini_redis::Result<()>>;
 
 pub struct InitialState {
     board_lines: Vec<(Point, Point)>,
@@ -23,10 +26,12 @@ pub struct InitialState {
     ships_t: [ship::ShipType; 5],
     curr_ship_index: usize,
     curr_ship: Option<ship::Ship>,
+
+    server_handle: Option<ServerHandle>,
 }
 
 impl InitialState {
-    pub fn new() -> InitialState {
+    pub async fn new(server_handle: Option<ServerHandle>) -> InitialState {
         let ships_t = [
             ship::ShipType::Carrier,
             ship::ShipType::Battleship,
@@ -41,6 +46,7 @@ impl InitialState {
             ships_t: ships_t,
             curr_ship_index: 1,
             curr_ship: Some(ship::Ship::new(ships_t[0])),
+            server_handle: server_handle,
         }
     }
 
@@ -131,14 +137,29 @@ impl state::State for InitialState {
                         // as placed all ships.
                         // returns next state 'battle_state'.
                         if self.curr_ship.is_none() {
+                            let rcv: String;
+                            let snd: String;
+
+                            if self.server_handle.is_some() {
+                                rcv = "player2".to_string();
+                                snd = "player1".to_string();
+                            } else {
+                                rcv = "player1".to_string();
+                                snd = "player2".to_string();
+                            }
+
                             next_state.replace(state::NextState::Update(Box::new(
                                 battle_state::BattleState::new(
                                     self.board_lines.clone(),
                                     self.ships.clone(),
+                                    self.server_handle.take(),
+                                    rcv,
+                                    snd,
                                 )
                                 .await
                                 .unwrap(),
                             )));
+
                             return;
                         }
                     }
@@ -196,7 +217,7 @@ impl state::State for InitialState {
         next_state.replace(state::NextState::Continue);
     }
 
-    fn draw(&self, canvas: &mut Canvas<Window>) {
+    async fn draw(&self, canvas: &mut Canvas<Window>) {
         // draw board lines.
         canvas.set_draw_color(Color::RGBA(0, 255, 0, 255));
         for (p1, p2) in self.board_lines.iter() {

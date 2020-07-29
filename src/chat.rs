@@ -10,17 +10,17 @@ pub struct Chat {
 
 impl Chat {
     pub async fn new(
-        addr: &str,
-        receive_channel_key: &str,
-        send_channel_key: &str,
+        addr: String,
+        receive_channel_key: String,
+        send_channel_key: String,
     ) -> Result<Chat> {
-        let client = client::connect(addr).await?;
+        let client = client::connect(addr.as_str()).await?;
         let subscriber = client.subscribe(vec![receive_channel_key.into()]).await?;
 
         Ok(Chat {
-            client: client::connect(addr).await?,
+            client: client::connect(addr.as_str()).await?,
             receive_channel: subscriber,
-            send_channel_key: String::from(send_channel_key),
+            send_channel_key: send_channel_key,
         })
     }
 

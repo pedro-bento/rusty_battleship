@@ -17,5 +17,5 @@ pub trait State {
         event_pump: &mut EventPump,
         next_state: &mut Option<NextState>,
     );
-    fn draw(&self, canvas: &mut Canvas<Window>);
+    async fn draw(&self, canvas: &mut Canvas<Window>);
 }

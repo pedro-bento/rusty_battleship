@@ -5,6 +5,7 @@ use sdl2::EventPump;
 
 mod battle_state;
 mod chat;
+mod choose_state;
 mod config;
 mod initial_state;
 mod ship;
@@ -36,7 +37,7 @@ impl Game {
         Game {
             canvas: canvas,
             event_pump: sdl_context.event_pump().unwrap(),
-            state: Box::new(initial_state::InitialState::new()),
+            state: Box::new(choose_state::ChooseState::new()),
         }
     }
 
@@ -64,7 +65,7 @@ impl Game {
                 _ => {}
             }
 
-            self.state.draw(&mut self.canvas);
+            self.state.draw(&mut self.canvas).await;
 
             // render
             self.canvas.present();
@@ -74,25 +75,6 @@ impl Game {
 
 #[tokio::main]
 pub async fn main() {
-    // TODO:
-    // create choose_state where players can choose to create or join a server.
-    //  creator will be player 1 the opponent player 2.
-    //  make sure to "lock" shot when waiting! (change color, block actions...)
-    // IMPORTANT: make sure we're using one subscriber per player!!!!!
-
     let mut game = Game::new();
     let _ = game.run().await;
 }
-
-/*
-    loop: {
-            Player1                              Player2
-        snd SHOT x y                        | rcv SHOT x y
-        rcv STAT 'hit'/'miss'/'game_over'   | snd STAT 'hit'/'miss'/'game_over'
-        rcv SHOT x y                        | snd SHOT x y
-        snd STAT 'hit'/'miss'/'game_over'   | rcv STAT 'hit'/'miss'/'game_over'
-    }
-
-    SHOT (x: i32, y: i32)
-    STAT String or Emum? 
-*/
