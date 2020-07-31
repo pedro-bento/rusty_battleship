@@ -46,6 +46,7 @@ impl BattleState {
     pub async fn new(
         board_lines: Vec<(Point, Point)>,
         my_ships: Vec<ship::Ship>,
+        addr: String,
         server_handle: Option<ServerHandle>,
         receive_channel_key: String,
         send_channel_key: String,
@@ -56,11 +57,6 @@ impl BattleState {
                 my_ship_points.push(*ship_point);
             }
         }
-
-        let mut buff: String = String::new();
-        println!("insert addr to connect: ");
-        let _ = std::io::stdin().read_line(&mut buff);
-        buff = buff.trim().to_string();
 
         Ok(BattleState {
             board_lines: board_lines,
@@ -77,12 +73,7 @@ impl BattleState {
             my_miss_shots: Arc::new(Mutex::new(Vec::new())),
 
             chat: Arc::new(Mutex::new(
-                chat::Chat::new(
-                    buff,
-                    receive_channel_key,
-                    send_channel_key,
-                )
-                .await?,
+                chat::Chat::new(addr, receive_channel_key, send_channel_key).await?,
             )),
 
             server_handle: server_handle,

@@ -27,11 +27,12 @@ pub struct InitialState {
     curr_ship_index: usize,
     curr_ship: Option<ship::Ship>,
 
+    addr: String,
     server_handle: Option<ServerHandle>,
 }
 
 impl InitialState {
-    pub async fn new(server_handle: Option<ServerHandle>) -> InitialState {
+    pub async fn new(addr: String, server_handle: Option<ServerHandle>) -> InitialState {
         let ships_t = [
             ship::ShipType::Carrier,
             ship::ShipType::Battleship,
@@ -46,6 +47,7 @@ impl InitialState {
             ships_t: ships_t,
             curr_ship_index: 1,
             curr_ship: Some(ship::Ship::new(ships_t[0])),
+            addr: addr,
             server_handle: server_handle,
         }
     }
@@ -152,6 +154,7 @@ impl state::State for InitialState {
                                 battle_state::BattleState::new(
                                     self.board_lines.clone(),
                                     self.ships.clone(),
+                                    self.addr.clone(),
                                     self.server_handle.take(),
                                     rcv,
                                     snd,

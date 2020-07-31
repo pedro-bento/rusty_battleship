@@ -19,7 +19,7 @@ struct Game {
 
 impl Game {
     fn new() -> Game {
-        let sdl_context = sdl2::init().unwrap();
+        let sdl_context: sdl2::Sdl = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
         let window = video_subsystem
             .window(
@@ -35,9 +35,9 @@ impl Game {
         canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 
         Game {
-            canvas: canvas,
-            event_pump: sdl_context.event_pump().unwrap(),
             state: Box::new(choose_state::ChooseState::new()),
+            canvas: canvas,
+            event_pump: sdl_context.event_pump().unwrap(),    
         }
     }
 

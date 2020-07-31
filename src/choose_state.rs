@@ -19,7 +19,7 @@ use super::state;
 struct Button {
     body: Rect,
     color: Color,
-    // text: Text // Todo.
+    text: String,
 }
 
 impl Button {
@@ -59,6 +59,8 @@ impl ChooseState {
                 ),
 
                 color: Color::RGBA(0, 0, 255, 255),
+
+                text: String::from("127.0.0.1:3232"),
             },
 
             join_button: Button {
@@ -71,23 +73,20 @@ impl ChooseState {
                 ),
 
                 color: Color::RGBA(0, 255, 0, 255),
+
+                text: String::from("127.0.0.1:3232"),
             },
         }
     }
 
     async fn start_server(&mut self) -> (SocketAddr, JoinHandle<mini_redis::Result<()>>) {
-        let mut buff: String = String::new();
-        println!("insert your ip: ");
-        let _ = std::io::stdin().read_line(&mut buff);
-        buff = buff.trim().to_string();
-
-        let listener = TcpListener::bind(format!("{}:0", buff)).await.unwrap();
+        let listener = TcpListener::bind(self.create_button.text.clone())
+            .await
+            .unwrap();
         let addr = listener.local_addr().unwrap();
 
         let handle =
             tokio::spawn(async move { server::run(listener, tokio::signal::ctrl_c()).await });
-
-        println!("addr is: {:?}", addr);
 
         (addr, handle)
     }
@@ -128,12 +127,17 @@ impl state::State for ChooseState {
                         let (_, server_handle) = self.start_server().await;
 
                         next_state.replace(state::NextState::Update(Box::new(
-                            initial_state::InitialState::new(Some(server_handle)).await,
+                            initial_state::InitialState::new(
+                                self.create_button.text.clone(),
+                                Some(server_handle),
+                            )
+                            .await,
                         )));
                         return;
                     } else if self.join_button.is_click(x, y) {
                         next_state.replace(state::NextState::Update(Box::new(
-                            initial_state::InitialState::new(None).await,
+                            initial_state::InitialState::new(self.join_button.text.clone(), None)
+                                .await,
                         )));
                         return;
                     }
