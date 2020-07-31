@@ -10,6 +10,7 @@ mod config;
 mod initial_state;
 mod ship;
 mod state;
+mod stats_state;
 
 struct Game {
     canvas: Canvas<Window>,
@@ -37,7 +38,7 @@ impl Game {
         Game {
             state: Box::new(choose_state::ChooseState::new()),
             canvas: canvas,
-            event_pump: sdl_context.event_pump().unwrap(),    
+            event_pump: sdl_context.event_pump().unwrap(),
         }
     }
 

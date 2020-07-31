@@ -18,6 +18,7 @@ use super::chat;
 use super::config;
 use super::ship;
 use super::state;
+use super::stats_state;
 
 type ServerHandle = JoinHandle<mini_redis::Result<()>>;
 
@@ -306,9 +307,29 @@ impl state::State for BattleState {
         let is_quit = self.is_quit.clone();
         let is_quit = is_quit.lock().await;
         if *is_quit {
-            next_state.replace(state::NextState::Quit);
+            let opponent_hit_shots = self.opponent_hit_shots.clone();
+            let opponent_hit_shots = opponent_hit_shots.lock().await;
+
+            let opponent_miss_shots = self.opponent_miss_shots.clone();
+            let opponent_miss_shots = opponent_miss_shots.lock().await;
+
+            let my_hit_shots = self.my_hit_shots.clone();
+            let my_hit_shots = my_hit_shots.lock().await;
+
+            let my_miss_shots = self.my_miss_shots.clone();
+            let my_miss_shots = my_miss_shots.lock().await;
+
+            next_state.replace(state::NextState::Update(
+                Box::new(stats_state::StatsState::new(
+                    opponent_hit_shots.clone(),
+                    opponent_miss_shots.clone(),
+                    my_hit_shots.clone(),
+                    my_miss_shots.clone(),
+                ))
+            ));
             return;
         }
+
         drop(is_quit);
 
         for event in event_pump.poll_iter() {
