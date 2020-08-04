@@ -319,14 +319,14 @@ impl state::State for BattleState {
             let my_miss_shots = self.my_miss_shots.clone();
             let my_miss_shots = my_miss_shots.lock().await;
 
-            next_state.replace(state::NextState::Update(
-                Box::new(stats_state::StatsState::new(
+            next_state.replace(state::NextState::Update(Box::new(
+                stats_state::StatsState::new(
                     opponent_hit_shots.clone(),
                     opponent_miss_shots.clone(),
                     my_hit_shots.clone(),
                     my_miss_shots.clone(),
-                ))
-            ));
+                ),
+            )));
             return;
         }
 

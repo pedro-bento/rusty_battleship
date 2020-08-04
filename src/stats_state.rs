@@ -33,7 +33,7 @@ impl StatsState {
     ) -> StatsState {
         StatsState {
             board_lines: StatsState::generate_board_lines(),
-            
+
             opponent_hit_shots: opponent_hit_shots,
             opponent_miss_shots: opponent_miss_shots,
 
@@ -67,15 +67,15 @@ impl StatsState {
             // left horizontal lines.
             line_points.push((
                 Point::new(x_interval, y_interval * i as i32 + y_offset),
-                Point::new(
-                    offset + x_interval,
-                    y_interval * i as i32 + y_offset,
-                ),
+                Point::new(offset + x_interval, y_interval * i as i32 + y_offset),
             ));
 
             // right vertical lines.
             line_points.push((
-                Point::new(x_interval * i as i32 + config::WINDOW_WIDTH as i32 - offset - x_interval, y_offset),
+                Point::new(
+                    x_interval * i as i32 + config::WINDOW_WIDTH as i32 - offset - x_interval,
+                    y_offset,
+                ),
                 Point::new(
                     x_interval * i as i32 + config::WINDOW_WIDTH as i32 - offset - x_interval,
                     config::WINDOW_HEIGHT as i32 - y_offset,
@@ -84,7 +84,10 @@ impl StatsState {
 
             // right horizontal lines.
             line_points.push((
-                Point::new(config::WINDOW_WIDTH as i32 - offset - x_interval, y_interval * i as i32 + y_offset),
+                Point::new(
+                    config::WINDOW_WIDTH as i32 - offset - x_interval,
+                    y_interval * i as i32 + y_offset,
+                ),
                 Point::new(
                     config::WINDOW_WIDTH as i32 - x_interval,
                     y_interval * i as i32 + y_offset,
@@ -95,12 +98,7 @@ impl StatsState {
         line_points
     }
 
-    fn draw_shots_left(
-        &self,
-        canvas: &mut Canvas<Window>,
-        color: Color,
-        shots: &Vec<Point>,
-    ) {
+    fn draw_shots_left(&self, canvas: &mut Canvas<Window>, color: Color, shots: &Vec<Point>) {
         let min_wh: i32 = std::cmp::min(config::WINDOW_WIDTH as i32, config::WINDOW_HEIGHT as i32);
 
         let offset: i32 = min_wh / 2;
@@ -127,12 +125,7 @@ impl StatsState {
         canvas.draw_rects(&cache[..]).unwrap();
     }
 
-    fn draw_shots_right(
-        &self,
-        canvas: &mut Canvas<Window>,
-        color: Color,
-        shots: &Vec<Point>,
-    ) {
+    fn draw_shots_right(&self, canvas: &mut Canvas<Window>, color: Color, shots: &Vec<Point>) {
         let min_wh: i32 = std::cmp::min(config::WINDOW_WIDTH as i32, config::WINDOW_HEIGHT as i32);
 
         let offset: i32 = min_wh / 2;
@@ -175,34 +168,6 @@ impl state::State for StatsState {
                 }
 
                 Event::KeyDown { keycode, .. } => match keycode {
-                    Some(Keycode::Return) => {
-                        
-                    }
-
-                    Some(Keycode::W) | Some(Keycode::Up) => {
-                        
-                    }
-
-                    Some(Keycode::S) | Some(Keycode::Down) => {
-                        
-                    }
-
-                    Some(Keycode::A) | Some(Keycode::Left) => {
-                        
-                    }
-
-                    Some(Keycode::D) | Some(Keycode::Right) => {
-                        
-                    }
-
-                    Some(Keycode::Q) => {
-                        
-                    }
-
-                    Some(Keycode::E) => {
-                        
-                    }
-
                     Some(Keycode::Escape) => {
                         next_state.replace(state::NextState::Quit);
                         return;
@@ -230,7 +195,15 @@ impl state::State for StatsState {
         self.draw_shots_left(canvas, Color::RGBA(0, 255, 0, 200), &self.my_hit_shots);
         self.draw_shots_left(canvas, Color::RGBA(0, 0, 255, 200), &self.my_miss_shots);
 
-        self.draw_shots_right(canvas, Color::RGBA(255, 0, 0, 200), &self.opponent_hit_shots);
-        self.draw_shots_right(canvas, Color::RGBA(0, 0, 255, 200), &self.opponent_miss_shots);
+        self.draw_shots_right(
+            canvas,
+            Color::RGBA(255, 0, 0, 200),
+            &self.opponent_hit_shots,
+        );
+        self.draw_shots_right(
+            canvas,
+            Color::RGBA(0, 0, 255, 200),
+            &self.opponent_miss_shots,
+        );
     }
 }
