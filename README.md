@@ -3,19 +3,19 @@ Battleship Game in Rust
 
 warning: currently only working on windows OS.
 
-# windows dependencies 
+## windows dependencies 
 ```bash
 cargo install cargo-vcpkg
 cargo vcpkg build
 cargo build
 ```
 
-# run
+## run
 ```bash
 cargo run
 ```
 
-# use
+## use
 
 The blue button creates a server on your machine and the green button joins a server.   
 
