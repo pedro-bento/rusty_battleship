@@ -1,5 +1,5 @@
 # rusty_battleship
-Battleship Game in Rust
+Multiplayer Battleship Game written in Rust
 
 warning: currently only working on windows OS.
 
